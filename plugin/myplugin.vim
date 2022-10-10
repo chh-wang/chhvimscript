@@ -7,7 +7,6 @@ function s:get_visual_selection_through_func()
         return ''
     endif
 
-    let lines[0] = lines[0][column_start - 1:]
 
 	" let option ww to null, such that press "l" won't go to next line
 	let saved_ww=&ww
@@ -24,6 +23,8 @@ function s:get_visual_selection_through_func()
 	elseif (column_dot != column_end)
 		let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
 	endif
+
+    let lines[0] = lines[0][column_start - 1:]
 
     return join(lines, "\n")
 endfunction

@@ -1,7 +1,18 @@
-vim9script
+vim9script noclear
+
+# Vim global plugin for peroidic notes such as daily or weekly
+# Last change: 2023-02-26 
+# Maintainer: Chh.wang <chh.wang@hotmail.com>
+# License: This file is placed in the public domain
+#
+
+if exists("g:loaded_periodic_notes_chh")
+    finish
+endif
+g:loaded_periodic_notes_chh = 1
 
 if !exists("g:periodic_home_dir")
-    g:periodic_home_dir = "~/.peroid"
+    g:periodic_home_dir = "~/.periodic"
 endif
 
 if !exists("g:periodic_weekly_dir")
@@ -12,7 +23,7 @@ if !exists("g:periodic_daily_dir")
     g:periodic_daily_dir = "daily"
 endif
 
-def g:PeriodicOpenThisWeek()
+def PeriodicOpenThisWeek()
     var year = system("date +%Y")
     var week = system("date +%V")
     var fileName = substitute(year .. "-W" .. week .. ".md", "\n", "", "g")
@@ -46,7 +57,7 @@ def PeriodicGetPreviousWeek(year: string, week: string): list<string>
     return [theYear, lastWeek]
 enddef
 
-def g:PeriodicOpenPreviousWeek()
+def PeriodicOpenPreviousWeek()
     var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
     if !empty(curWeekDate)
         var previousWeekDate = PeriodicGetPreviousWeek(curWeekDate[0], curWeekDate[1])
@@ -72,11 +83,29 @@ def PeriodicGetNextWeek(year: string, week: string): list<string>
     return [theYear, nextWeek]
 enddef
 
-def g:PeriodicOpenNextWeek()
+def PeriodicOpenNextWeek()
     var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
     if !empty(curWeekDate)
         var nextWeekDate = PeriodicGetNextWeek(curWeekDate[0], curWeekDate[1])
         exe "e " .. expand("%:h") .. "/" .. nextWeekDate[0] .. "-W" .. nextWeekDate[1] .. ".md"
     endif
 enddef
+
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenThisWeek;')
+    map <unique> <leader>pnw <Plug>VimperiodicnotePeriodicOpenThisWeek;
+endif
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenThisWeek; <SID>PeriodicOpenThisWeek
+noremap <SID>PeriodicOpenThisWeek :call <SID>PeriodicOpenThisWeek()<cr>
+
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenPreviousWeek;')
+    map <unique> <leader>pnk <Plug>VimperiodicnotePeriodicOpenPreviousWeek;
+endif
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenPreviousWeek; <SID>PeriodicOpenPreviousWeek
+noremap <SID>PeriodicOpenPreviousWeek :call <SID>PeriodicOpenPreviousWeek()<cr>
+
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenNextWeek;')
+    map <unique> <leader>pnj <Plug>VimperiodicnotePeriodicOpenNextWeek;
+endif
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenNextWeek; <SID>PeriodicOpenNextWeek
+noremap <SID>PeriodicOpenNextWeek :call <SID>PeriodicOpenNextWeek()<cr>
 

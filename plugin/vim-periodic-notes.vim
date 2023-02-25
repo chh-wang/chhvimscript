@@ -91,6 +91,38 @@ def PeriodicOpenNextWeek()
     endif
 enddef
 
+def PeriodicOpenToday()
+    var fileName = system("date +%Y-%m-%d.md")
+    fileName = substitute(fileName, "\n", "", "g")
+    exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
+enddef
+
+def PeriodicCheckAndGetDailyDateOfCurrentFileName(): string
+    var curFileName = expand("%:t")
+    if curFileName =~ '^\d\d\d\d-\d\d-\d\d.md$'
+        return curFileName[0 : 9]
+    endif
+    return ""
+enddef
+
+def PeriodicOpenTomorrow()
+    var curDailyDate = PeriodicCheckAndGetDailyDateOfCurrentFileName()
+    if !empty(curDailyDate)
+        var fileName = system("date -d \"" .. curDailyDate .. " +1 day\" +%Y-%m-%d.md")
+        fileName = substitute(fileName, "\n", "", "g")
+        exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
+    endif
+enddef
+
+def PeriodicOpenYesterday()
+    var curDailyDate = PeriodicCheckAndGetDailyDateOfCurrentFileName()
+    if !empty(curDailyDate)
+        var fileName = system("date -d \"" .. curDailyDate .. " -1 day\" +%Y-%m-%d.md")
+        fileName = substitute(fileName, "\n", "", "g")
+        exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
+    endif
+enddef
+
 if !hasmapto('<Plug>VimperiodicnotePeriodicOpenThisWeek;')
     map <unique> <leader>pnw <Plug>VimperiodicnotePeriodicOpenThisWeek;
 endif
@@ -108,4 +140,22 @@ if !hasmapto('<Plug>VimperiodicnotePeriodicOpenNextWeek;')
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenNextWeek; <SID>PeriodicOpenNextWeek
 noremap <SID>PeriodicOpenNextWeek :call <SID>PeriodicOpenNextWeek()<cr>
+
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenToday;')
+    map <unique> <leader>pnt <Plug>VimperiodicnotePeriodicOpenToday;
+endif
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenToday; <SID>PeriodicOpenToday
+noremap <SID>PeriodicOpenToday :call <SID>PeriodicOpenToday()<cr>
+
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenTomorrow;')
+    map <unique> <leader>pnn <Plug>VimperiodicnotePeriodicOpenTomorrow;
+endif
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenTomorrow; <SID>PeriodicOpenTomorrow
+noremap <SID>PeriodicOpenTomorrow :call <SID>PeriodicOpenTomorrow()<cr>
+
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenYesterday;')
+    map <unique> <leader>pnp <Plug>VimperiodicnotePeriodicOpenYesterday;
+endif
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenYesterday; <SID>PeriodicOpenYesterday
+noremap <SID>PeriodicOpenYesterday :call <SID>PeriodicOpenYesterday()<cr>
 

@@ -1,25 +1,25 @@
 vim9script
 
-if !exists("g:period_home_dir")
-    g:period_home_dir = "~/.peroid"
+if !exists("g:periodic_home_dir")
+    g:periodic_home_dir = "~/.peroid"
 endif
 
-if !exists("g:period_weekly_dir")
-    g:period_weekly_dir = "weekly"
+if !exists("g:periodic_weekly_dir")
+    g:periodic_weekly_dir = "weekly"
 endif
 
-if !exists("g:period_daily_dir")
-    g:period_daily_dir = "daily"
+if !exists("g:periodic_daily_dir")
+    g:periodic_daily_dir = "daily"
 endif
 
-def g:PeriodOpenThisWeek()
+def g:PeriodicOpenThisWeek()
     var year = system("date +%Y")
     var week = system("date +%V")
     var fileName = substitute(year .. "-W" .. week .. ".md", "\n", "", "g")
-    exe "e " .. g:period_home_dir .. "/" .. g:period_weekly_dir .. "/" .. fileName
+    exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_weekly_dir .. "/" .. fileName
 enddef
 
-def PeriodCheckAndGetWeekDateOfCurrentFileName(): list<string>
+def PeriodicCheckAndGetWeekDateOfCurrentFileName(): list<string>
     var curFileName = expand("%:t")
     # curFileName = "1988-W52.md"
     if curFileName =~ '^\d\d\d\d-W\d\d.md$'
@@ -30,7 +30,7 @@ def PeriodCheckAndGetWeekDateOfCurrentFileName(): list<string>
     return []
 enddef
 
-def PeriodGetPreviousWeek(year: string, week: string): list<string>
+def PeriodicGetPreviousWeek(year: string, week: string): list<string>
     var theYear: string
     var lastWeek: string
     if str2nr(week) == 0
@@ -46,15 +46,15 @@ def PeriodGetPreviousWeek(year: string, week: string): list<string>
     return [theYear, lastWeek]
 enddef
 
-def g:PeriodOpenPreviousWeek()
-    var curWeekDate = PeriodCheckAndGetWeekDateOfCurrentFileName()
+def g:PeriodicOpenPreviousWeek()
+    var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
     if !empty(curWeekDate)
-        var previousWeekDate = PeriodGetPreviousWeek(curWeekDate[0], curWeekDate[1])
+        var previousWeekDate = PeriodicGetPreviousWeek(curWeekDate[0], curWeekDate[1])
         exe "e " .. expand("%:h") .. "/" .. previousWeekDate[0] .. "-W" .. previousWeekDate[1] .. ".md"
     endif
 enddef
 
-def PeriodGetNextWeek(year: string, week: string): list<string>
+def PeriodicGetNextWeek(year: string, week: string): list<string>
     var nextYear = str2nr(year) + 1
     var maxWeekOfYear = system("date -d \"" .. nextYear .. "0101 -1 day\" +%W")
     var theYear: string
@@ -72,10 +72,10 @@ def PeriodGetNextWeek(year: string, week: string): list<string>
     return [theYear, nextWeek]
 enddef
 
-def g:PeriodOpenNextWeek()
-    var curWeekDate = PeriodCheckAndGetWeekDateOfCurrentFileName()
+def g:PeriodicOpenNextWeek()
+    var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
     if !empty(curWeekDate)
-        var nextWeekDate = PeriodGetNextWeek(curWeekDate[0], curWeekDate[1])
+        var nextWeekDate = PeriodicGetNextWeek(curWeekDate[0], curWeekDate[1])
         exe "e " .. expand("%:h") .. "/" .. nextWeekDate[0] .. "-W" .. nextWeekDate[1] .. ".md"
     endif
 enddef

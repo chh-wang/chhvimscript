@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 vim9script noclear
 
 # Vim global plugin for peroidic notes such as daily or weekly
@@ -32,30 +31,6 @@ def PeriodicOpenThisWeek()
 enddef
 
 def PeriodicCheckAndGetWeekDateOfCurrentFileName(): list<string>
-=======
-vim9script
-
-if !exists("g:period_home_dir")
-    g:period_home_dir = "~/.peroid"
-endif
-
-if !exists("g:period_weekly_dir")
-    g:period_weekly_dir = "weekly"
-endif
-
-if !exists("g:period_daily_dir")
-    g:period_daily_dir = "daily"
-endif
-
-def g:PeriodOpenThisWeek()
-    var year = system("date +%Y")
-    var week = system("date +%V")
-    var fileName = substitute(year .. "-W" .. week .. ".md", "\n", "", "g")
-    exe "e " .. g:period_home_dir .. "/" .. g:period_weekly_dir .. "/" .. fileName
-enddef
-
-def PeriodCheckAndGetWeekDateOfCurrentFileName(): list<string>
->>>>>>> 049a414 (add periodic notes)
     var curFileName = expand("%:t")
     # curFileName = "1988-W52.md"
     if curFileName =~ '^\d\d\d\d-W\d\d.md$'
@@ -66,11 +41,7 @@ def PeriodCheckAndGetWeekDateOfCurrentFileName(): list<string>
     return []
 enddef
 
-<<<<<<< HEAD
 def PeriodicGetPreviousWeek(year: string, week: string): list<string>
-=======
-def PeriodGetPreviousWeek(year: string, week: string): list<string>
->>>>>>> 049a414 (add periodic notes)
     var theYear: string
     var lastWeek: string
     if str2nr(week) == 0
@@ -86,26 +57,15 @@ def PeriodGetPreviousWeek(year: string, week: string): list<string>
     return [theYear, lastWeek]
 enddef
 
-<<<<<<< HEAD
 def PeriodicOpenPreviousWeek()
     var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
     if !empty(curWeekDate)
         var previousWeekDate = PeriodicGetPreviousWeek(curWeekDate[0], curWeekDate[1])
-=======
-def g:PeriodOpenPreviousWeek()
-    var curWeekDate = PeriodCheckAndGetWeekDateOfCurrentFileName()
-    if !empty(curWeekDate)
-        var previousWeekDate = PeriodGetPreviousWeek(curWeekDate[0], curWeekDate[1])
->>>>>>> 049a414 (add periodic notes)
         exe "e " .. expand("%:h") .. "/" .. previousWeekDate[0] .. "-W" .. previousWeekDate[1] .. ".md"
     endif
 enddef
 
-<<<<<<< HEAD
 def PeriodicGetNextWeek(year: string, week: string): list<string>
-=======
-def PeriodGetNextWeek(year: string, week: string): list<string>
->>>>>>> 049a414 (add periodic notes)
     var nextYear = str2nr(year) + 1
     var maxWeekOfYear = system("date -d \"" .. nextYear .. "0101 -1 day\" +%W")
     var theYear: string
@@ -123,22 +83,14 @@ def PeriodGetNextWeek(year: string, week: string): list<string>
     return [theYear, nextWeek]
 enddef
 
-<<<<<<< HEAD
 def PeriodicOpenNextWeek()
     var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
     if !empty(curWeekDate)
         var nextWeekDate = PeriodicGetNextWeek(curWeekDate[0], curWeekDate[1])
-=======
-def g:PeriodOpenNextWeek()
-    var curWeekDate = PeriodCheckAndGetWeekDateOfCurrentFileName()
-    if !empty(curWeekDate)
-        var nextWeekDate = PeriodGetNextWeek(curWeekDate[0], curWeekDate[1])
->>>>>>> 049a414 (add periodic notes)
         exe "e " .. expand("%:h") .. "/" .. nextWeekDate[0] .. "-W" .. nextWeekDate[1] .. ".md"
     endif
 enddef
 
-<<<<<<< HEAD
 def PeriodicOpenToday()
     var fileName = system("date +%Y-%m-%d.md")
     fileName = substitute(fileName, "\n", "", "g")
@@ -206,5 +158,3 @@ if !hasmapto('<Plug>VimperiodicnotePeriodicOpenYesterday;')
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenYesterday; <SID>PeriodicOpenYesterday
 noremap <SID>PeriodicOpenYesterday :call <SID>PeriodicOpenYesterday()<cr>
-=======
->>>>>>> 049a414 (add periodic notes)

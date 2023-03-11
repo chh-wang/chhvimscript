@@ -158,4 +158,3 @@ if !hasmapto('<Plug>VimperiodicnotePeriodicOpenYesterday;')
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenYesterday; <SID>PeriodicOpenYesterday
 noremap <SID>PeriodicOpenYesterday :call <SID>PeriodicOpenYesterday()<cr>
-

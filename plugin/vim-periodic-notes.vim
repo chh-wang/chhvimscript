@@ -133,13 +133,13 @@ if !hasmapto('<Plug>VimperiodicnotePeriodicOpenPreviousWeek;')
     map <unique> <leader>pnk <Plug>VimperiodicnotePeriodicOpenPreviousWeek;
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenPreviousWeek; <SID>PeriodicOpenPreviousWeek
-noremap <SID>PeriodicOpenPreviousWeek :call <SID>PeriodicOpenPreviousWeek()<cr>
+noremap <SID>PeriodicOpenPreviousWeek @=':call <SID>PeriodicOpenPreviousWeek()\|'<cr><cr>
 
 if !hasmapto('<Plug>VimperiodicnotePeriodicOpenNextWeek;')
     map <unique> <leader>pnj <Plug>VimperiodicnotePeriodicOpenNextWeek;
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenNextWeek; <SID>PeriodicOpenNextWeek
-noremap <SID>PeriodicOpenNextWeek :call <SID>PeriodicOpenNextWeek()<cr>
+noremap <SID>PeriodicOpenNextWeek @=':call <SID>PeriodicOpenNextWeek()\|'<cr><cr>
 
 if !hasmapto('<Plug>VimperiodicnotePeriodicOpenToday;')
     map <unique> <leader>pnt <Plug>VimperiodicnotePeriodicOpenToday;
@@ -151,10 +151,10 @@ if !hasmapto('<Plug>VimperiodicnotePeriodicOpenTomorrow;')
     map <unique> <leader>pnn <Plug>VimperiodicnotePeriodicOpenTomorrow;
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenTomorrow; <SID>PeriodicOpenTomorrow
-noremap <SID>PeriodicOpenTomorrow :call <SID>PeriodicOpenTomorrow()<cr>
+noremap <SID>PeriodicOpenTomorrow @=':call <SID>PeriodicOpenTomorrow()\|'<cr><cr>
 
 if !hasmapto('<Plug>VimperiodicnotePeriodicOpenYesterday;')
     map <unique> <leader>pnp <Plug>VimperiodicnotePeriodicOpenYesterday;
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenYesterday; <SID>PeriodicOpenYesterday
-noremap <SID>PeriodicOpenYesterday :call <SID>PeriodicOpenYesterday()<cr>
+noremap <SID>PeriodicOpenYesterday @=':call <SID>PeriodicOpenYesterday()\|'<cr><cr>

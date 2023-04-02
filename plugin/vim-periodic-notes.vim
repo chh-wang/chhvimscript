@@ -15,6 +15,10 @@ if !exists("g:periodic_home_dir")
     g:periodic_home_dir = "~/.periodic"
 endif
 
+if !exists("g:periodic_monthly_dir")
+    g:periodic_monthly_dir = "monthly"
+endif
+
 if !exists("g:periodic_weekly_dir")
     g:periodic_weekly_dir = "weekly"
 endif
@@ -23,22 +27,52 @@ if !exists("g:periodic_daily_dir")
     g:periodic_daily_dir = "daily"
 endif
 
+def PeriodicOpenThisMonth()
+    var year = system("date +%Y")
+    var month = system("date +%m")
+    var fileName = substitute(year .. "-m" .. month .. ".md", "\n", "", "g")
+    exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_monthly_dir .. "/" .. fileName
+enddef
+
+def PeriodicGetPreviousMonth(year: string, month: string): list<string>
+    var theYear: string
+    var lastMonth: string
+    if str2nr(month) == 1
+        theYear = system("date -d \"" .. year .. "0101 -1 day\" +%Y")
+        lastMonth = system("date -d \"" .. year .. "0101 -1 day\" +%m")
+    else
+        var tmpMonth = str2nr(month) - 2
+        theYear = year
+        lastMonth = system("date -d \"" .. year .. "0101 +" .. tmpMonth .. " month\" +%m")
+    endif
+    theYear = substitute(theYear, "\n", "", "g")
+    lastMonth = substitute(lastMonth, "\n", "", "g")
+    return [theYear, lastMonth]
+enddef
+
+def PeriodicGetNextMonth(year: string, month: string): list<string>
+    var nextYear = str2nr(year) + 1
+    var maxMonthOfYear = system("date -d \"" .. nextYear .. "0101 -1 day\" +%m")
+    var theYear: string
+    var nextMonth: string
+    if str2nr(month) == str2nr(maxMonthOfYear)
+        theYear = system("date -d \"" .. nextYear .. "0101\" +%Y")
+        nextMonth = system("date -d \"" .. nextYear .. "0101\" +%m")
+    else
+        var tmpMonth = str2nr(month)
+        theYear = year
+        nextMonth = system("date -d \"" .. year .. "0101 +" .. tmpMonth .. " month\" +%m")
+    endif
+    theYear = substitute(theYear, "\n", "", "g")
+    nextMonth = substitute(nextMonth, "\n", "", "g")
+    return [theYear, nextMonth]
+enddef
+
 def PeriodicOpenThisWeek()
     var year = system("date +%Y")
     var week = system("date +%V")
     var fileName = substitute(year .. "-W" .. week .. ".md", "\n", "", "g")
     exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_weekly_dir .. "/" .. fileName
-enddef
-
-def PeriodicCheckAndGetWeekDateOfCurrentFileName(): list<string>
-    var curFileName = expand("%:t")
-    # curFileName = "1988-W52.md"
-    if curFileName =~ '^\d\d\d\d-W\d\d.md$'
-        var fileYear = curFileName[0 : 3]
-        var fileWeek = curFileName[6 : 7]
-        return [fileYear, fileWeek]
-    endif
-    return []
 enddef
 
 def PeriodicGetPreviousWeek(year: string, week: string): list<string>
@@ -55,14 +89,6 @@ def PeriodicGetPreviousWeek(year: string, week: string): list<string>
     theYear = substitute(theYear, "\n", "", "g")
     lastWeek = substitute(lastWeek, "\n", "", "g")
     return [theYear, lastWeek]
-enddef
-
-def PeriodicOpenPreviousWeek()
-    var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
-    if !empty(curWeekDate)
-        var previousWeekDate = PeriodicGetPreviousWeek(curWeekDate[0], curWeekDate[1])
-        exe "e " .. expand("%:h") .. "/" .. previousWeekDate[0] .. "-W" .. previousWeekDate[1] .. ".md"
-    endif
 enddef
 
 def PeriodicGetNextWeek(year: string, week: string): list<string>
@@ -83,45 +109,70 @@ def PeriodicGetNextWeek(year: string, week: string): list<string>
     return [theYear, nextWeek]
 enddef
 
-def PeriodicOpenNextWeek()
-    var curWeekDate = PeriodicCheckAndGetWeekDateOfCurrentFileName()
-    if !empty(curWeekDate)
-        var nextWeekDate = PeriodicGetNextWeek(curWeekDate[0], curWeekDate[1])
-        exe "e " .. expand("%:h") .. "/" .. nextWeekDate[0] .. "-W" .. nextWeekDate[1] .. ".md"
-    endif
-enddef
-
 def PeriodicOpenToday()
     var fileName = system("date +%Y-%m-%d.md")
     fileName = substitute(fileName, "\n", "", "g")
     exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
 enddef
 
-def PeriodicCheckAndGetDailyDateOfCurrentFileName(): string
+def PeriodicCheckAndGetDateOfCurrentFileName(): list<string>
     var curFileName = expand("%:t")
-    if curFileName =~ '^\d\d\d\d-\d\d-\d\d.md$'
-        return curFileName[0 : 9]
+    if curFileName =~ '^\d\d\d\d-m\d\d.md$'
+        var fileYear = curFileName[0 : 3]
+        var fileMonth = curFileName[6 : 7]
+        return ["monthly", fileYear, fileMonth]
+    elseif curFileName =~ '^\d\d\d\d-W\d\d.md$'
+        var fileYear = curFileName[0 : 3]
+        var fileWeek = curFileName[6 : 7]
+        return ["weekly", fileYear, fileWeek]
+    elseif curFileName =~ '^\d\d\d\d-\d\d-\d\d.md$'
+        var fileYear = curFileName[0 : 3]
+        var fileMonth = curFileName[5 : 6]
+        var fileDay = curFileName[8 : 9]
+        return ["daily", fileYear, fileMonth, fileDay]
     endif
-    return ""
+    return []
 enddef
 
-def PeriodicOpenTomorrow()
-    var curDailyDate = PeriodicCheckAndGetDailyDateOfCurrentFileName()
-    if !empty(curDailyDate)
-        var fileName = system("date -d \"" .. curDailyDate .. " +1 day\" +%Y-%m-%d.md")
-        fileName = substitute(fileName, "\n", "", "g")
-        exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
+def PeriodicOpenNext()
+    var curDate = PeriodicCheckAndGetDateOfCurrentFileName()
+    if !empty(curDate)
+        if curDate[0] == "monthly"
+            var nextMonthDate = PeriodicGetNextMonth(curDate[1], curDate[2])
+            exe "e " .. expand("%:h") .. "/" .. nextMonthDate[0] .. "-m" .. nextMonthDate[1] .. ".md"
+        elseif curDate[0] == "weekly"
+            var nextWeekDate = PeriodicGetNextWeek(curDate[1], curDate[2])
+            exe "e " .. expand("%:h") .. "/" .. nextWeekDate[0] .. "-W" .. nextWeekDate[1] .. ".md"
+        elseif curDate[0] == "daily"
+            var fileName = system("date -d \"" .. curDate[1] .. "-" .. curDate[2] .. "-" .. curDate[3] .. " +1 day\" +%Y-%m-%d.md")
+            fileName = substitute(fileName, "\n", "", "g")
+            exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
+        endif
     endif
 enddef
 
-def PeriodicOpenYesterday()
-    var curDailyDate = PeriodicCheckAndGetDailyDateOfCurrentFileName()
-    if !empty(curDailyDate)
-        var fileName = system("date -d \"" .. curDailyDate .. " -1 day\" +%Y-%m-%d.md")
-        fileName = substitute(fileName, "\n", "", "g")
-        exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
+def PeriodicOpenPrevious()
+    var curDate = PeriodicCheckAndGetDateOfCurrentFileName()
+    if !empty(curDate)
+        if curDate[0] == "monthly"
+            var previousMonthDate = PeriodicGetPreviousMonth(curDate[1], curDate[2])
+            exe "e " .. expand("%:h") .. "/" .. previousMonthDate[0] .. "-m" .. previousMonthDate[1] .. ".md"
+        elseif curDate[0] == "weekly"
+            var previousWeekDate = PeriodicGetPreviousWeek(curDate[1], curDate[2])
+            exe "e " .. expand("%:h") .. "/" .. previousWeekDate[0] .. "-W" .. previousWeekDate[1] .. ".md"
+        elseif curDate[0] == "daily"
+            var fileName = system("date -d \"" .. curDate[1] .. "-" .. curDate[2] .. "-" .. curDate[3] .. " -1 day\" +%Y-%m-%d.md")
+            fileName = substitute(fileName, "\n", "", "g")
+            exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_daily_dir .. "/" .. fileName
+        endif
     endif
 enddef
+
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenThisMonth;')
+    map <unique> <leader>pnm <Plug>VimperiodicnotePeriodicOpenThisMonth;
+endif
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenThisMonth; <SID>PeriodicOpenThisMonth
+noremap <SID>PeriodicOpenThisMonth :call <SID>PeriodicOpenThisMonth()<cr>
 
 if !hasmapto('<Plug>VimperiodicnotePeriodicOpenThisWeek;')
     map <unique> <leader>pnw <Plug>VimperiodicnotePeriodicOpenThisWeek;
@@ -129,32 +180,21 @@ endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenThisWeek; <SID>PeriodicOpenThisWeek
 noremap <SID>PeriodicOpenThisWeek :call <SID>PeriodicOpenThisWeek()<cr>
 
-if !hasmapto('<Plug>VimperiodicnotePeriodicOpenPreviousWeek;')
-    map <unique> <leader>pnk <Plug>VimperiodicnotePeriodicOpenPreviousWeek;
-endif
-noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenPreviousWeek; <SID>PeriodicOpenPreviousWeek
-noremap <SID>PeriodicOpenPreviousWeek @=':call <SID>PeriodicOpenPreviousWeek()\|'<cr><cr>
-
-if !hasmapto('<Plug>VimperiodicnotePeriodicOpenNextWeek;')
-    map <unique> <leader>pnj <Plug>VimperiodicnotePeriodicOpenNextWeek;
-endif
-noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenNextWeek; <SID>PeriodicOpenNextWeek
-noremap <SID>PeriodicOpenNextWeek @=':call <SID>PeriodicOpenNextWeek()\|'<cr><cr>
-
 if !hasmapto('<Plug>VimperiodicnotePeriodicOpenToday;')
     map <unique> <leader>pnt <Plug>VimperiodicnotePeriodicOpenToday;
 endif
 noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenToday; <SID>PeriodicOpenToday
 noremap <SID>PeriodicOpenToday :call <SID>PeriodicOpenToday()<cr>
 
-if !hasmapto('<Plug>VimperiodicnotePeriodicOpenTomorrow;')
-    map <unique> <leader>pnn <Plug>VimperiodicnotePeriodicOpenTomorrow;
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenNext;')
+    map <unique> <leader>pnn <Plug>VimperiodicnotePeriodicOpenNext;
 endif
-noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenTomorrow; <SID>PeriodicOpenTomorrow
-noremap <SID>PeriodicOpenTomorrow @=':call <SID>PeriodicOpenTomorrow()\|'<cr><cr>
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenNext; <SID>PeriodicOpenNext
+noremap <SID>PeriodicOpenNext @=':call <SID>PeriodicOpenNext()\|'<cr><cr>
 
-if !hasmapto('<Plug>VimperiodicnotePeriodicOpenYesterday;')
-    map <unique> <leader>pnp <Plug>VimperiodicnotePeriodicOpenYesterday;
+if !hasmapto('<Plug>VimperiodicnotePeriodicOpenPrevious;')
+    map <unique> <leader>pnp <Plug>VimperiodicnotePeriodicOpenPrevious;
 endif
-noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenYesterday; <SID>PeriodicOpenYesterday
-noremap <SID>PeriodicOpenYesterday @=':call <SID>PeriodicOpenYesterday()\|'<cr><cr>
+noremap <unique> <script> <Plug>VimperiodicnotePeriodicOpenPrevious; <SID>PeriodicOpenPrevious
+noremap <SID>PeriodicOpenPrevious @=':call <SID>PeriodicOpenPrevious()\|'<cr><cr>
+

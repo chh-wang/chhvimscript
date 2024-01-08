@@ -70,21 +70,24 @@ enddef
 
 def PeriodicOpenThisWeek()
     var year = system("date +%Y")
-    var week = system("date +%V")
-    var fileName = substitute(year .. "-W" .. week .. ".md", "\n", "", "g")
+    var week = system("date +%W")
+    var isoWeek = system("date +%V")
+    if str2nr(week) == 0 && str2nr(isoWeek) != 1
+        year = system("date \"-1 year\" +%Y")
+    endif
+    var fileName = substitute(year .. "-W" .. isoWeek .. ".md", "\n", "", "g")
     exe "e " .. g:periodic_home_dir .. "/" .. g:periodic_weekly_dir .. "/" .. fileName
 enddef
 
 def PeriodicGetPreviousWeek(year: string, week: string): list<string>
     var theYear: string
     var lastWeek: string
-    if str2nr(week) == 0
+    if str2nr(week) == 1
         theYear = system("date -d \"" .. year .. "0101 -1 day\" +%Y")
-        lastWeek = system("date -d \"" .. year .. "0101 -1 day\" +%W")
+        lastWeek = system("date -d \"" .. year .. "0101 -4 day\" +%V")
     else
-        var tmpWeek = str2nr(week) - 1
         theYear = year
-        lastWeek = system("date -d \"" .. year .. "0101 +" .. tmpWeek .. " week\" +%W")
+        lastWeek = printf("%02d", str2nr(week) - 1)
     endif
     theYear = substitute(theYear, "\n", "", "g")
     lastWeek = substitute(lastWeek, "\n", "", "g")
@@ -93,16 +96,15 @@ enddef
 
 def PeriodicGetNextWeek(year: string, week: string): list<string>
     var nextYear = str2nr(year) + 1
-    var maxWeekOfYear = system("date -d \"" .. nextYear .. "0101 -1 day\" +%W")
+    var maxWeekOfYear = system("date -d \"" .. nextYear .. "0101 -4 day\" +%V")
     var theYear: string
     var nextWeek: string
     if str2nr(week) == str2nr(maxWeekOfYear)
-        theYear = system("date -d \"" .. nextYear .. "0101\" +%Y")
-        nextWeek = system("date -d \"" .. nextYear .. "0101\" +%W")
+        theYear = printf("%04d", str2nr(year) + 1)
+        nextWeek = "01"
     else
-        var tmpWeek = str2nr(week) + 1
         theYear = year
-        nextWeek = system("date -d \"" .. year .. "0101 +" .. tmpWeek .. " week\" +%W")
+        nextWeek = printf("%02d", str2nr(week) + 1)
     endif
     theYear = substitute(theYear, "\n", "", "g")
     nextWeek = substitute(nextWeek, "\n", "", "g")
